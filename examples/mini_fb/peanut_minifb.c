@@ -84,7 +84,7 @@ uint8_t *read_rom_to_ram(const char *file_name)
 /**
  * Ignore all errors.
  */
-void gb_error(struct gb_s *gb, const enum gb_error_e gb_err, const uint16_t val)
+void gb_error(struct gb_s *gb, const enum gb_error_e gb_err, const uint16_t addr)
 {
 	const char* gb_err_str[GB_INVALID_MAX] = {
 		"UNKNOWN",
