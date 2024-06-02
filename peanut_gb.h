@@ -1676,28 +1676,74 @@ void __gb_draw_line(struct gb_s *gb)
 			t1 >>= shift;
 			t2 >>= shift;
 
-			/* TODO: Put for loop within the to if statements
-			 * because the BG priority bit will be the same for
-			 * all the pixels in the tile. */
-			for(disp_x = start; disp_x != end; disp_x += dir)
-			{
-				uint8_t c = (t1 & 0x1) | ((t2 & 0x1) << 1);
-				// check transparency / sprite overlap / background overlap
+			if (OF & OBJ_PALETTE) {
+				if (OF & OBJ_PRIORITY) {
+					uint8_t bg_colour = (gb->display.bg_palette[0] & LCD_COLOUR);
 
-				if(c && !(OF & OBJ_PRIORITY && !((pixels[disp_x] & 0x3) == gb->display.bg_palette[0])))
-				{
-					/* Set pixel colour. */
-					pixels[disp_x] = (OF & OBJ_PALETTE)
-						? gb->display.sp_palette[c + 4]
-						: gb->display.sp_palette[c];
-#if PEANUT_GB_12_COLOUR
-					/* Set pixel palette (OBJ0 or OBJ1). */
-					pixels[disp_x] |= (OF & OBJ_PALETTE);
-#endif
+					for(disp_x = start; disp_x != end; disp_x += dir)
+					{
+						uint8_t c = (t1 & 0x1) | ((t2 & 0x1) << 1);
+						// check transparency / sprite overlap / background overlap
+
+						if(c && (pixels[disp_x] & LCD_COLOUR) == bg_colour)
+						{
+							/* Set pixel colour. */
+							pixels[disp_x] = gb->display.sp_palette[c + 4];
+						}
+
+						t1 = t1 >> 1;
+						t2 = t2 >> 1;
+					}
+				} else {
+					for(disp_x = start; disp_x != end; disp_x += dir)
+					{
+						uint8_t c = (t1 & 0x1) | ((t2 & 0x1) << 1);
+						// check transparency / sprite overlap / background overlap
+
+						if(c)
+						{
+							/* Set pixel colour. */
+							pixels[disp_x] = gb->display.sp_palette[c + 4];
+						}
+
+						t1 = t1 >> 1;
+						t2 = t2 >> 1;
+					}
 				}
+			} else {
+				if (OF & OBJ_PRIORITY) {
+					uint8_t bg_colour = (gb->display.bg_palette[0] & LCD_COLOUR);
 
-				t1 = t1 >> 1;
-				t2 = t2 >> 1;
+					for(disp_x = start; disp_x != end; disp_x += dir)
+					{
+						uint8_t c = (t1 & 0x1) | ((t2 & 0x1) << 1);
+						// check transparency / sprite overlap / background overlap
+
+						if(c && (pixels[disp_x] & LCD_COLOUR) == bg_colour)
+						{
+							/* Set pixel colour. */
+							pixels[disp_x] = gb->display.sp_palette[c];
+						}
+
+						t1 = t1 >> 1;
+						t2 = t2 >> 1;
+					}
+				} else {
+					for(disp_x = start; disp_x != end; disp_x += dir)
+					{
+						uint8_t c = (t1 & 0x1) | ((t2 & 0x1) << 1);
+						// check transparency / sprite overlap / background overlap
+
+						if(c)
+						{
+							/* Set pixel colour. */
+							pixels[disp_x] = gb->display.sp_palette[c];
+						}
+
+						t1 = t1 >> 1;
+						t2 = t2 >> 1;
+					}
+				}
 			}
 		}
 	}
